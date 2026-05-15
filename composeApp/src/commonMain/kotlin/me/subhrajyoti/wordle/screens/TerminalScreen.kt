@@ -42,6 +42,10 @@ import me.subhrajyoti.wordle.ui.theme.NeonTokyoColors
 @Composable
 fun TerminalScreen(
     modifier: Modifier = Modifier,
+    rows: List<WordleRowData> = defaultRows,
+    attempts: Int = 2,
+    maxAttempts: Int = 6,
+    keyStates: Map<Char, KeyState> = defaultKeyStates,
     onNavigateToStats: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {}
 ) {
@@ -56,13 +60,13 @@ fun TerminalScreen(
         Spacer(modifier = Modifier.height(16.dp))
         SystemMessageLabel()
         Spacer(modifier = Modifier.height(8.dp))
-        WordleGrid()
+        WordleGrid(rows = rows)
         Spacer(modifier = Modifier.height(16.dp))
-        AttemptsCounter()
+        AttemptsCounter(attempts = attempts, maxAttempts = maxAttempts)
         Spacer(modifier = Modifier.height(12.dp))
         NewGameButton()
-        Spacer(modifier = Modifier.weight(1f))
-        Keyboard()
+        Spacer(modifier = Modifier.height(16.dp))
+        Keyboard(keyStates = keyStates)
         Spacer(modifier = Modifier.height(8.dp))
         BottomNavigation(
             selectedTab = Tab.PLAY,
@@ -76,6 +80,43 @@ fun TerminalScreen(
         )
     }
 }
+
+private val defaultRows = listOf(
+    WordleRowData(letters = listOf('C', 'Y', 'B', 'E', 'R'), states = listOf(TileState.CORRECT, TileState.PRESENT, TileState.CORRECT, TileState.ABSENT, TileState.PRESENT)),
+    WordleRowData(letters = listOf('C', 'A', 'B', 'L', 'E'), states = listOf(TileState.PRESENT, TileState.CORRECT, TileState.ABSENT, TileState.PRESENT, TileState.CORRECT)),
+    WordleRowData(letters = listOf('C', 'A'), states = listOf(TileState.FOCUSED, TileState.FOCUSED)),
+    WordleRowData(),
+    WordleRowData(),
+    WordleRowData()
+)
+
+private val defaultKeyStates = mapOf(
+    'C' to KeyState.CORRECT,
+    'Y' to KeyState.PRESENT,
+    'B' to KeyState.CORRECT,
+    'E' to KeyState.ABSENT,
+    'R' to KeyState.PRESENT,
+    'A' to KeyState.PRESENT,
+    'L' to KeyState.CORRECT,
+    'D' to KeyState.ABSENT,
+    'F' to KeyState.ABSENT,
+    'G' to KeyState.ABSENT,
+    'H' to KeyState.ABSENT,
+    'I' to KeyState.ABSENT,
+    'K' to KeyState.ABSENT,
+    'M' to KeyState.ABSENT,
+    'N' to KeyState.ABSENT,
+    'O' to KeyState.ABSENT,
+    'P' to KeyState.ABSENT,
+    'Q' to KeyState.ABSENT,
+    'S' to KeyState.ABSENT,
+    'T' to KeyState.ABSENT,
+    'U' to KeyState.ABSENT,
+    'V' to KeyState.ABSENT,
+    'W' to KeyState.ABSENT,
+    'X' to KeyState.ABSENT,
+    'Z' to KeyState.ABSENT
+)
 
 @Composable
 private fun TerminalHeader() {
@@ -128,16 +169,7 @@ private fun SystemMessageLabel() {
 }
 
 @Composable
-private fun WordleGrid() {
-    val rows = listOf(
-        WordleRowData(letters = listOf('C', 'Y', 'B', 'E', 'R'), states = listOf(TileState.CORRECT, TileState.PRESENT, TileState.CORRECT, TileState.ABSENT, TileState.PRESENT)),
-        WordleRowData(letters = listOf('C', 'A', 'B', 'L', 'E'), states = listOf(TileState.PRESENT, TileState.CORRECT, TileState.ABSENT, TileState.PRESENT, TileState.CORRECT)),
-        WordleRowData(letters = listOf('C', 'A'), states = listOf(TileState.FOCUSED, TileState.FOCUSED)),
-        WordleRowData(letters = emptyList(), states = emptyList()),
-        WordleRowData(letters = emptyList(), states = emptyList()),
-        WordleRowData(letters = emptyList(), states = emptyList())
-    )
-
+private fun WordleGrid(rows: List<WordleRowData> = defaultRows) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,9 +181,9 @@ private fun WordleGrid() {
     }
 }
 
-private data class WordleRowData(
-    val letters: List<Char>,
-    val states: List<TileState>
+data class WordleRowData(
+    val letters: List<Char> = emptyList(),
+    val states: List<TileState> = emptyList()
 )
 
 @Composable
@@ -250,9 +282,9 @@ private fun WordleTile(letter: Char, state: TileState) {
 }
 
 @Composable
-private fun AttemptsCounter() {
+private fun AttemptsCounter(attempts: Int = 2, maxAttempts: Int = 6) {
     Text(
-        text = "ATTEMPTS: 2/6",
+        text = "ATTEMPTS: $attempts/$maxAttempts",
         color = NeonTokyoColors.Secondary,
         fontSize = 14.sp,
         fontWeight = FontWeight.Medium,
@@ -294,17 +326,28 @@ private fun NewGameButton() {
 }
 
 @Composable
-private fun Keyboard() {
+private fun Keyboard(
+    keyStates: Map<Char, KeyState> = emptyMap()
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        KeyboardRow(keys = listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"))
-        KeyboardRow(keys = listOf("A", "S", "D", "F", "G", "H", "J", "K", "L"), horizontalPadding = 12.dp)
         KeyboardRow(
-            keys = listOf("ENTER", "Z", "X", "C", "V", "B", "N", "M", "backspace"),
-            specialKeys = setOf("ENTER", "backspace"),
+            keys = listOf('Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'),
+            keyStates = keyStates
+        )
+        KeyboardRow(
+            keys = listOf('A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'),
+            keyStates = keyStates,
+            horizontalPadding = 12.dp
+        )
+        KeyboardRow(
+            keys = listOf('Z', 'X', 'C', 'V', 'B', 'N', 'M'),
+            keyStates = keyStates,
+            showEnter = true,
+            showBackspace = true,
             horizontalPadding = 8.dp
         )
     }
@@ -312,54 +355,142 @@ private fun Keyboard() {
 
 @Composable
 private fun KeyboardRow(
-    keys: List<String>,
-    specialKeys: Set<String> = emptySet(),
+    keys: List<Char>,
+    keyStates: Map<Char, KeyState> = emptyMap(),
+    showEnter: Boolean = false,
+    showBackspace: Boolean = false,
     horizontalPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (showEnter) {
+            SpecialKey(
+                label = "Enter",
+                type = SpecialKeyType.ENTER,
+                onClick = {}
+            )
+        }
         keys.forEach { key ->
-            val isSpecial = key in specialKeys
-            val keyWeight = if (isSpecial) 1.5f else 1f
-
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 2.dp)
-                    .height(48.dp)
-                    .weight(keyWeight)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(
-                        when {
-                            key == "ENTER" -> NeonTokyoColors.Secondary.copy(alpha = 0.2f)
-                            key == "backspace" -> NeonTokyoColors.Primary.copy(alpha = 0.2f)
-                            else -> NeonTokyoColors.SurfaceContainer
-                        }
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = NeonTokyoColors.Outline.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .clickable(onClick = {}),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (key == "backspace") "⌫" else key,
-                    color = when {
-                        key == "ENTER" -> NeonTokyoColors.Secondary
-                        key == "backspace" -> NeonTokyoColors.Primary
-                        else -> NeonTokyoColors.OnSurface
-                    },
-                    fontSize = if (isSpecial) 14.sp else 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = FontFamily.SansSerif
-                )
-            }
+            val state = keyStates[key] ?: KeyState.DEFAULT
+            KeyboardKey(
+                letter = key,
+                state = state,
+                onClick = {}
+            )
+        }
+        if (showBackspace) {
+            SpecialKey(
+                label = "⌫",
+                type = SpecialKeyType.BACKSPACE,
+                onClick = {}
+            )
         }
     }
+}
+
+@Composable
+private fun KeyboardKey(
+    letter: Char,
+    state: KeyState,
+    onClick: () -> Unit
+) {
+    val (backgroundColor, textColor, borderColor) = when (state) {
+        KeyState.DEFAULT -> Triple(
+            NeonTokyoColors.SurfaceContainer,
+            NeonTokyoColors.OnSurface,
+            NeonTokyoColors.Outline.copy(alpha = 0.3f)
+        )
+        KeyState.CORRECT -> Triple(
+            NeonTokyoColors.Secondary.copy(alpha = 0.4f),
+            NeonTokyoColors.Secondary,
+            NeonTokyoColors.Secondary
+        )
+        KeyState.PRESENT -> Triple(
+            NeonTokyoColors.Tertiary.copy(alpha = 0.4f),
+            NeonTokyoColors.Tertiary,
+            NeonTokyoColors.Tertiary
+        )
+        KeyState.ABSENT -> Triple(
+            NeonTokyoColors.SurfaceContainerHigh,
+            NeonTokyoColors.OnSurfaceVariant.copy(alpha = 0.4f),
+            NeonTokyoColors.Outline.copy(alpha = 0.15f)
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 2.dp)
+            .width(28.dp)
+            .height(48.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(backgroundColor)
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = letter.toString(),
+            color = textColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.SansSerif
+        )
+    }
+}
+
+@Composable
+private fun SpecialKey(
+    label: String,
+    type: SpecialKeyType,
+    onClick: () -> Unit
+) {
+    val (backgroundColor, textColor) = when (type) {
+        SpecialKeyType.ENTER -> Pair(NeonTokyoColors.Secondary.copy(alpha = 0.2f), NeonTokyoColors.Secondary)
+        SpecialKeyType.BACKSPACE -> Pair(NeonTokyoColors.Primary.copy(alpha = 0.2f), NeonTokyoColors.Primary)
+    }
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 2.dp)
+            .width(52.dp)
+            .height(48.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(backgroundColor)
+            .border(
+                width = 1.dp,
+                color = NeonTokyoColors.Outline.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = textColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.SansSerif
+        )
+    }
+}
+
+enum class KeyState {
+    DEFAULT,
+    CORRECT,
+    PRESENT,
+    ABSENT
+}
+
+enum class SpecialKeyType {
+    ENTER,
+    BACKSPACE
 }
 
 enum class Tab {
@@ -440,4 +571,190 @@ private fun BottomNavItem(
 @Composable
 private fun TerminalScreenPreview() {
     TerminalScreen()
+}
+
+@Preview
+@Composable
+private fun TerminalScreenFreshGamePreview() {
+    TerminalScreen(
+        rows = listOf(
+            WordleRowData(),
+            WordleRowData(),
+            WordleRowData(),
+            WordleRowData(),
+            WordleRowData(),
+            WordleRowData()
+        ),
+        attempts = 0,
+        keyStates = emptyMap()
+    )
+}
+
+@Preview
+@Composable
+private fun TerminalScreenMidGamePreview() {
+    TerminalScreen(
+        rows = listOf(
+            WordleRowData(letters = listOf('S', 'T', 'A', 'R', 'E'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.CORRECT, TileState.ABSENT, TileState.PRESENT)),
+            WordleRowData(letters = listOf('C', 'R', 'A', 'N', 'E'), states = listOf(TileState.PRESENT, TileState.CORRECT, TileState.CORRECT, TileState.ABSENT, TileState.CORRECT)),
+            WordleRowData(letters = listOf('P', 'L', 'A', 'N', 'T'), states = listOf(TileState.FOCUSED, TileState.FOCUSED, TileState.CORRECT, TileState.FOCUSED, TileState.CORRECT)),
+            WordleRowData(),
+            WordleRowData(),
+            WordleRowData()
+        ),
+        attempts = 3,
+        keyStates = mapOf(
+            'S' to KeyState.ABSENT,
+            'T' to KeyState.PRESENT,
+            'A' to KeyState.CORRECT,
+            'R' to KeyState.ABSENT,
+            'E' to KeyState.CORRECT,
+            'C' to KeyState.PRESENT,
+            'N' to KeyState.ABSENT
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun TerminalScreenWonPreview() {
+    TerminalScreen(
+        rows = listOf(
+            WordleRowData(letters = listOf('G', 'U', 'E', 'S', 'T'), states = listOf(TileState.ABSENT, TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.PRESENT)),
+            WordleRowData(letters = listOf('B', 'R', 'E', 'A', 'K'), states = listOf(TileState.PRESENT, TileState.CORRECT, TileState.CORRECT, TileState.CORRECT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('D', 'R', 'E', 'A', 'M'), states = listOf(TileState.ABSENT, TileState.CORRECT, TileState.CORRECT, TileState.CORRECT, TileState.PRESENT)),
+            WordleRowData(letters = listOf('C', 'R', 'E', 'A', 'M'), states = listOf(TileState.CORRECT, TileState.CORRECT, TileState.CORRECT, TileState.CORRECT, TileState.CORRECT)),
+            WordleRowData(),
+            WordleRowData()
+        ),
+        attempts = 4,
+        keyStates = mapOf(
+            'G' to KeyState.ABSENT,
+            'U' to KeyState.ABSENT,
+            'E' to KeyState.CORRECT,
+            'S' to KeyState.ABSENT,
+            'T' to KeyState.PRESENT,
+            'B' to KeyState.PRESENT,
+            'R' to KeyState.CORRECT,
+            'A' to KeyState.CORRECT,
+            'K' to KeyState.ABSENT,
+            'D' to KeyState.ABSENT,
+            'M' to KeyState.PRESENT,
+            'C' to KeyState.CORRECT
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun TerminalScreenLostPreview() {
+    TerminalScreen(
+        rows = listOf(
+            WordleRowData(letters = listOf('S', 'L', 'A', 'T', 'E'), states = listOf(TileState.ABSENT, TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('C', 'R', 'O', 'W', 'D'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('P', 'R', 'U', 'N', 'G'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('F', 'R', 'Y', 'I', 'N'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('W', 'R', 'O', 'T', 'H'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT, TileState.ABSENT)),
+            WordleRowData(letters = listOf('B', 'R', 'I', 'M', 'S'), states = listOf(TileState.ABSENT, TileState.PRESENT, TileState.ABSENT, TileState.ABSENT, TileState.ABSENT))
+        ),
+        attempts = 6,
+        keyStates = mapOf(
+            'S' to KeyState.ABSENT,
+            'L' to KeyState.ABSENT,
+            'A' to KeyState.PRESENT,
+            'T' to KeyState.ABSENT,
+            'E' to KeyState.ABSENT,
+            'C' to KeyState.ABSENT,
+            'R' to KeyState.PRESENT,
+            'O' to KeyState.ABSENT,
+            'W' to KeyState.ABSENT,
+            'D' to KeyState.ABSENT,
+            'P' to KeyState.ABSENT,
+            'U' to KeyState.ABSENT,
+            'N' to KeyState.ABSENT,
+            'G' to KeyState.ABSENT,
+            'F' to KeyState.ABSENT,
+            'Y' to KeyState.ABSENT,
+            'I' to KeyState.ABSENT,
+            'B' to KeyState.ABSENT,
+            'M' to KeyState.ABSENT,
+            'H' to KeyState.ABSENT,
+            'K' to KeyState.ABSENT,
+            'J' to KeyState.ABSENT,
+            'Q' to KeyState.ABSENT,
+            'V' to KeyState.ABSENT,
+            'X' to KeyState.ABSENT,
+            'Z' to KeyState.ABSENT
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun KeyboardDefaultPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(NeonTokyoColors.Background)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Keyboard — Default State",
+            color = NeonTokyoColors.OnSurface,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.SansSerif
+        )
+        Keyboard(keyStates = emptyMap())
+    }
+}
+
+@Preview
+@Composable
+private fun KeyboardWithStatesPreview() {
+    val keyStates = mapOf(
+        'C' to KeyState.CORRECT,
+        'Y' to KeyState.PRESENT,
+        'B' to KeyState.CORRECT,
+        'E' to KeyState.ABSENT,
+        'R' to KeyState.PRESENT,
+        'A' to KeyState.PRESENT,
+        'L' to KeyState.CORRECT,
+        'D' to KeyState.ABSENT,
+        'F' to KeyState.ABSENT,
+        'G' to KeyState.ABSENT,
+        'H' to KeyState.ABSENT,
+        'I' to KeyState.ABSENT,
+        'K' to KeyState.ABSENT,
+        'M' to KeyState.ABSENT,
+        'N' to KeyState.ABSENT,
+        'O' to KeyState.ABSENT,
+        'P' to KeyState.ABSENT,
+        'Q' to KeyState.ABSENT,
+        'S' to KeyState.ABSENT,
+        'T' to KeyState.ABSENT,
+        'U' to KeyState.ABSENT,
+        'V' to KeyState.ABSENT,
+        'W' to KeyState.ABSENT,
+        'X' to KeyState.ABSENT,
+        'Z' to KeyState.ABSENT
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(NeonTokyoColors.Background)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Keyboard — After Guesses",
+            color = NeonTokyoColors.OnSurface,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.SansSerif
+        )
+        Keyboard(keyStates = keyStates)
+    }
 }
